@@ -13,7 +13,8 @@ public class TwitchBot extends PircBot{
 	int port		= 6667;
 	String oAuth	= "oauth:0vgjetqvkmx33ohu7e8o9kgcd5jhu8";
 	String channel	= "#samqua";
-	String rewards	= "/lootBag.csv";
+	String rewards	= "lootBag.aqua";
+	String commands	= "commands.aqua";
 	String chatUser	= "Samqua";
 	String cmdP		= "?";
 
@@ -23,6 +24,7 @@ public class TwitchBot extends PircBot{
 	public TwitchBot(){}
 	
 	public void run() throws Exception{
+		this.setEncoding("utf-8");
 		String configFile	= "/config.aqua";
 		BufferedReader br	= null;
 		String line			= null;
@@ -187,6 +189,10 @@ public class TwitchBot extends PircBot{
 	}
 	
 	public void onMessage(String channel, String sender, String login, String hostname, String message){
+		if (sender.equals(this.name)){
+			return;
+		}
+		
 		if (message.toLowerCase().contains("samaquabot")){
 			this.sendMessage(channel, "Hey I heard you say my name! I'm SamaquaBot v.0.1 Alpha. For a list of commands type in '"+cmdP+"help'.");
 		} else if (message.startsWith(cmdP) && message.length() > 1){
@@ -209,6 +215,12 @@ public class TwitchBot extends PircBot{
 				this.sendMessage(channel, "This is the help menu v.0.1, the only current command is ?njh. Give it a try!");
 			} else if (command.equals("steve")){
 				this.sendMessage(channel, "Ah, god damn it.");
+			} else if (command.equals("kill")){
+				if (mArray.length > 1){
+					this.sendMessage(channel, "/me stabs " + mArray[1] + " with a rusty spoon.");
+				} else {
+					this.sendMessage(channel, "/me pushes " + sender + " off a rusty spoon.");
+				}
 			}
 		}
 	}
