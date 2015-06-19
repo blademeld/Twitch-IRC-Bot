@@ -25,7 +25,7 @@ public class TwitchBot extends PircBot{
 	
 	public void run() throws Exception{
 		this.setEncoding("utf-8");
-		String configFile	= "/config.aqua";
+		String configFile	= "config.aqua";
 		BufferedReader br	= null;
 		String line			= null;
 		String lineData[]	= null;
