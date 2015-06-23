@@ -2,6 +2,7 @@ package bot;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import org.jibble.pircbot.*;
 
@@ -16,10 +17,16 @@ public class TwitchBot extends PircBot{
 	String rewards	= "lootBag.aqua";
 	String commands	= "commands.aqua";
 	String chatUser	= "Samqua";
-	String cmdP		= "?";
+	String prompt	= "?";
 
 	List lootBag	= null;
+	Map functions	= new HashMap();
 	Map claimedLoot	= new HashMap();
+
+	public static void main(String[] args) throws Exception{
+		TwitchBot b = new TwitchBot();
+		b.run();
+	}
 	
 	public TwitchBot(){}
 	
@@ -46,7 +53,7 @@ public class TwitchBot extends PircBot{
 				} else if (lineData[0].equals("lootbag")){
 					rewards = lineData[1];
 				} else if (lineData[0].equals("trigger")){
-					cmdP = lineData[1];
+					prompt = lineData[1];
 				} else if (lineData[0].equals("irc")){
 					url = lineData[1];
 					if (lineData.length > 2){
@@ -73,6 +80,34 @@ public class TwitchBot extends PircBot{
 		this.connect(url, port, oAuth);
 		this.joinChannel(channel);
 		this.openRewards(rewards);
+		
+		configFile	= commands;
+		br			= null;
+		line		= null;
+		lineData	= null;
+		
+		try {
+			functions = new HashMap();
+			br = new BufferedReader(new FileReader(configFile));
+			while ((line = br.readLine()) != null) {
+				String regex = "(?<!\\\\)" + Pattern.quote("|");
+				lineData = line.split(regex);
+				
+				functions.put(lineData[0], lineData[1]);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	public void openRewards(String filename){
@@ -194,8 +229,8 @@ public class TwitchBot extends PircBot{
 		}
 		
 		if (message.toLowerCase().contains("samaquabot")){
-			this.sendMessage(channel, "Hey I heard you say my name! I'm SamaquaBot v.0.1 Alpha. For a list of commands type in '"+cmdP+"help'.");
-		} else if (message.startsWith(cmdP) && message.length() > 1){
+			this.sendMessage(channel, "Hey I heard you say my name! I'm SamaquaBot v.0.1 Alpha. For a list of commands type in '"+prompt+"help'.");
+		} else if (message.startsWith(prompt) && message.length() > 1){
 			message = message.substring(1);
 			
 			String[] mArray = message.split(" ");
@@ -209,17 +244,26 @@ public class TwitchBot extends PircBot{
 				}
 			}
 			
-			if (command.equals("njh")){
-				this.sendMessage(channel, "AQUA <3 NJH");
-			} else if (command.equals("help")){
+			if (command.equals("help")){
 				this.sendMessage(channel, "This is the help menu v.0.1, the only current command is ?njh. Give it a try!");
-			} else if (command.equals("steve")){
-				this.sendMessage(channel, "Ah, god damn it.");
-			} else if (command.equals("kill")){
-				if (mArray.length > 1){
-					this.sendMessage(channel, "/me stabs " + mArray[1] + " with a rusty spoon.");
-				} else {
-					this.sendMessage(channel, "/me pushes " + sender + " off a rusty spoon.");
+			} else if (command.equals("commandlist")){
+				try {
+					this.sendMessage(sender, "The current commands list is as follows:");
+					this.wait(5);
+					
+					for (Map.Entry<String, Object> entry : functions.entrySet()) {
+					    String key = entry.getKey();
+					    Object value = entry.getValue();
+					    // ...
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}else {
+				try {
+					functions.get(command);
+				} catch(Exception e){
+					this.sendMessage(channel, "That's not a vaild command. For a list of commands try ?commandlist and I'll PM you the entire thing!");
 				}
 			}
 		}
