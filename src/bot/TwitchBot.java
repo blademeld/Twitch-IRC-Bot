@@ -24,8 +24,8 @@ public class TwitchBot extends PircBot{
 	Map claimedLoot	= new HashMap();
 
 	public static void main(String[] args) throws Exception{
-		TwitchBot b = new TwitchBot();
-		b.run();
+		TwitchBot bot = new TwitchBot();
+		bot.run();
 	}
 	
 	public TwitchBot(){}
@@ -52,7 +52,7 @@ public class TwitchBot extends PircBot{
 					channel = lineData[1];
 				} else if (lineData[0].equals("lootbag")){
 					rewards = lineData[1];
-				} else if (lineData[0].equals("trigger")){
+				} else if (lineData[0].equals("prompt")){
 					prompt = lineData[1];
 				} else if (lineData[0].equals("irc")){
 					url = lineData[1];
@@ -245,21 +245,27 @@ public class TwitchBot extends PircBot{
 			}
 			
 			if (command.equals("help")){
-				this.sendMessage(channel, "This is the help menu v.0.1, the only current command is ?njh. Give it a try!");
+				this.sendMessage(channel, "This is the help menu v.0.1.1, try ?commandlist for more options.");
 			} else if (command.equals("commandlist")){
 				try {
-					this.sendMessage(sender, "The current commands list is as follows:");
+					//this.sendRawLine("NOTICE "+sender+" :The current commands list is as follows:");
+					this.sendMessage(channel, "The current commands list is as follows:");
 					this.wait(5);
-					
-					for (Map.Entry<String, Object> entry : functions.entrySet()) {
-					    String key = entry.getKey();
-					    Object value = entry.getValue();
-					    // ...
+					//this.sendMessage("NOTICE " + sender, "The current commands list is as follows:");
+	
+				    Iterator it = functions.entrySet().iterator();
+					while (it.hasNext()) {
+						Map.Entry pair = (Map.Entry)it.next();
+				        this.sendMessage(channel, "?" + pair.getKey() + " " + pair.getValue());
+				        //System.out.println(pair.getKey() + ": " + pair.getValue());
+				        //this.sendRawLine("/msg "+sender+" ?" + pair.getKey() + "  " + pair.getValue());
+				        this.wait(5);
+				        it.remove();
 					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				} catch(Exception e){
+					this.sendMessage(channel, "Error while parsing commandlist.");
 				}
-			}else {
+			} else {
 				try {
 					functions.get(command);
 				} catch(Exception e){
