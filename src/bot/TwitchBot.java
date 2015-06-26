@@ -32,6 +32,7 @@ public class TwitchBot extends PircBot{
 	
 	public void run() throws Exception{
 		this.setEncoding("utf-8");
+		this.setMessageDelay(1000);
 		String configFile	= "config.aqua";
 		BufferedReader br	= null;
 		String line			= null;
@@ -238,10 +239,13 @@ public class TwitchBot extends PircBot{
 			String command = mArray[0].toLowerCase();
 			List params = new ArrayList();
 			
+			String target = sender;
+			
 			if (mArray.length > 1){
 				for (int i = 1; i < mArray.length; i++){
 					params.add(mArray[i]);
 				}
+				target = mArray[1];
 			}
 			
 			if (command.equals("help")){
@@ -249,25 +253,35 @@ public class TwitchBot extends PircBot{
 			} else if (command.equals("commandlist")){
 				try {
 					//this.sendRawLine("NOTICE "+sender+" :The current commands list is as follows:");
-					this.sendMessage(channel, "The current commands list is as follows:");
-					this.wait(5);
+					//this.sendMessage(channel, "The current commands list is as follows:");
+//					this.wait(100);
 					//this.sendMessage("NOTICE " + sender, "The current commands list is as follows:");
 	
+					String messageOut = "The current commands list is as follows:				";
+					
 				    Iterator it = functions.entrySet().iterator();
 					while (it.hasNext()) {
 						Map.Entry pair = (Map.Entry)it.next();
-				        this.sendMessage(channel, "?" + pair.getKey() + " " + pair.getValue());
+				        //this.sendMessage(channel, "?" + pair.getKey() + " " + pair.getValue());
+						messageOut += "?" + pair.getKey() + " " + pair.getValue() + "					";
 				        //System.out.println(pair.getKey() + ": " + pair.getValue());
 				        //this.sendRawLine("/msg "+sender+" ?" + pair.getKey() + "  " + pair.getValue());
-				        this.wait(5);
+//				        this.wait(100);
 				        it.remove();
 					}
+					
+					this.sendMessage(channel, messageOut);
 				} catch(Exception e){
 					this.sendMessage(channel, "Error while parsing commandlist.");
 				}
 			} else {
 				try {
-					functions.get(command);
+					String messageOut = functions.get(command).toString();
+
+					messageOut = messageOut.replaceAll("@sender", sender);
+					messageOut = messageOut.replaceAll("@target", target);
+					
+					this.sendMessage(channel, messageOut);
 				} catch(Exception e){
 					this.sendMessage(channel, "That's not a vaild command. For a list of commands try ?commandlist and I'll PM you the entire thing!");
 				}
