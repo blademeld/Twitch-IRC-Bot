@@ -148,15 +148,33 @@ public class TwitchBot extends PircBot{
 	}
 	
 	public int randNum(){
-		return randNum(0, 100);
+		return randNum(1, 100);
 	}
 	
 	public int randNum(int max){
-		return randNum(0, max);
+		return randNum(1, max);
 	}
 	
 	public int randNum(int min, int max){
-		return (int)(Math.random()*(max-min)+min);
+		return (int)(Math.random()*(max-min+1)+min);
+	}
+	
+	public int randNum(String max){
+		int val = -1;
+		try {
+			if (max.equals("")){
+				return randNum();
+			} else if (max.contains(",")){
+				String[] minMax = max.replaceAll(" ", "").split(",");
+				
+				return randNum(Integer.parseInt(minMax[0]), Integer.parseInt(minMax[1]));
+			} else {
+				return randNum(Integer.parseInt(max));
+			}
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+		return val;
 	}
 	
 	public String pickReward(){
@@ -229,6 +247,10 @@ public class TwitchBot extends PircBot{
 			return;
 		}
 		
+		if (sender.equals("Edich9118") && message.toLowerCase().contains("kawai")){
+			this.sendMessage(channel, "SO KAWAIIIII!!!!!!!~~~");
+		}
+		
 		if (message.toLowerCase().contains("samaquabot")){
 			this.sendMessage(channel, "Hey I heard you say my name! I'm SamaquaBot v.0.1 Alpha. For a list of commands type in '"+prompt+"help'.");
 		} else if (message.startsWith(prompt) && message.length() > 1){
@@ -280,9 +302,20 @@ public class TwitchBot extends PircBot{
 
 					messageOut = messageOut.replaceAll("@sender", sender);
 					messageOut = messageOut.replaceAll("@target", target);
+										
+					if (messageOut.contains("!random")){
+						String[] messageList = messageOut.split("!random");
+						
+						messageOut = messageList[0];
+						for (int i = 1; i < messageList.length; i++){
+							String randVal = messageList[i].substring(1,messageList[i].indexOf(")"));
+							messageOut += this.randNum(randVal) + messageList[i].substring(messageList[i].indexOf(")")+1, messageList[i].length());
+						}
+					}
 					
 					this.sendMessage(channel, messageOut);
 				} catch(Exception e){
+					e.printStackTrace();
 					this.sendMessage(channel, "That's not a vaild command. For a list of commands try ?commandlist and I'll PM you the entire thing!");
 				}
 			}
